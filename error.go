@@ -39,21 +39,3 @@ func New(err error) *Error {
 	e.Details = Details{Details: make(map[string]string)}
 	return e
 }
-
-// Details ...
-type Details struct {
-	Details map[string]string
-}
-
-// Add ...
-func (d Details) Add(key, value string) {
-	d.Details[key] = value
-}
-
-// MarshalLogObject ...
-func (d Details) MarshalLogObject(enc zapcore.ObjectEncoder) error {
-	for k, v := range d.Details {
-		enc.AddString(k, v)
-	}
-	return nil
-}
