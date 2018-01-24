@@ -9,7 +9,7 @@ import (
 
 // Error ...
 type Error struct {
-	errorx.Error
+	Errorx  *errorx.Error
 	ID      string
 	Code    string
 	Message string
@@ -25,17 +25,28 @@ func (e Error) MarshalLogObject(kv zapcore.ObjectEncoder) error {
 	if len(e.Message) != 0 {
 		kv.AddString("message", e.Message)
 	}
-	kv.AddString("error", e.Error.Cause.Error())
+	kv.AddString("error", e.Error())
 	kv.AddObject("details", e.Details)
-	kv.AddString("error_stack", string(e.Error.Stack()))
+	kv.AddString("error_stack", string(e.Errorx.Stack()))
 	return nil
 }
 
 // New ...
 func New(err error) *Error {
+	if err == nil {
+		return nil
+	}
 	e := &Error{}
 	e.ID = nuid.Next()
-	e.Error = *errorx.New(err)
+	e.Errorx = errorx.New(err)
 	e.Details = Details{Details: make(map[string]string)}
 	return e
+}
+
+func (e *Error) Error() string {
+	return e.Errorx.Error()
+}
+
+func (e *Error) Cause() error {
+	return e.Errorx.Cause
 }
