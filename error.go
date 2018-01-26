@@ -9,11 +9,11 @@ import (
 
 // Error ...
 type Error struct {
-	Errorx  *errorx.Error
-	ID      string
-	Code    string
-	Message string
-	Details Details
+	Errorx  *errorx.Error `json:"errorx"`
+	ID      string        `json:"error_id"`
+	Code    string        `json:"code"`
+	Message string        `json:"message"`
+	Details Details       `json:"details"`
 }
 
 // MarshalLogObject ...

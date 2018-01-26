@@ -4,7 +4,7 @@ import "go.uber.org/zap/zapcore"
 
 // Details ...
 type Details struct {
-	Details map[string]string
+	Details map[string]string `json:"details"`
 }
 
 // Add ...
