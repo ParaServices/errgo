@@ -37,6 +37,6 @@ func (p PQError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 }
 
 // AddPQError ...
-func (e Error) AddPQError(pqError *pq.Error) {
+func (e *Error) AddPQError(pqError *pq.Error) {
 	e.PQError = &PQError{pqError}
 }

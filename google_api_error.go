@@ -30,6 +30,6 @@ func (g GoogleAPIError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 }
 
 // AddGoogleAPIError ...
-func (e Error) AddGoogleAPIError(err *googleapi.Error) {
+func (e *Error) AddGoogleAPIError(err *googleapi.Error) {
 	e.GoogleAPIError = &GoogleAPIError{err}
 }
