@@ -37,7 +37,7 @@ func (e Error) MarshalLogObject(kv zapcore.ObjectEncoder) error {
 	if e.GoogleAPIError != nil {
 		kv.AddObject("google_api_error", e.GoogleAPIError)
 	}
-	kv.AddBinary("error_stack", e.Errorx.Stack())
+	kv.AddByteString("error_stack", e.Errorx.Stack())
 	return nil
 }
 
