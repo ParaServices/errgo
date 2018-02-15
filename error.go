@@ -16,6 +16,7 @@ type Error struct {
 	Details        Details         `json:"details"`
 	PQError        *PQError        `json:"pq_error,omitempty"`
 	GoogleAPIError *GoogleAPIError `json:"google_api_error,omitempty"`
+	AMQPError      *AMQPError      `json:"amqp_error,omitempty"`
 }
 
 // MarshalLogObject ...
@@ -37,6 +38,9 @@ func (e Error) MarshalLogObject(kv zapcore.ObjectEncoder) error {
 	if e.GoogleAPIError != nil {
 		kv.AddObject("google_api_error", e.GoogleAPIError)
 	}
+	if e.AMQPError != nil {
+		kv.AddObject("amqp_error", e.AMQPError)
+	}
 	kv.AddByteString("error_stack", e.Errorx.Stack())
 	return nil
 }
@@ -52,6 +56,7 @@ func New(err error) *Error {
 	e.Details = Details{Details: make(map[string]string)}
 	e.PQError = (*PQError)(nil)
 	e.GoogleAPIError = (*GoogleAPIError)(nil)
+	e.AMQPError = (*AMQPError)(nil)
 	return e
 }
 
