@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// AMQPError ...
+// AMQPError represents the error from the amqp package
 type AMQPError struct {
 	*amqp.Error
 }

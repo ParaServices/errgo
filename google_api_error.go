@@ -5,12 +5,13 @@ import (
 	"google.golang.org/api/googleapi"
 )
 
-// GoogleAPIError ...
+// GoogleAPIError represents the error that is returned from the googleapi
+// package
 type GoogleAPIError struct {
 	*googleapi.Error
 }
 
-// MarshalLogObject ...
+// MarshalLogObject satisfies the interface for the paralog.Logger interface
 func (g GoogleAPIError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	enc.AddString("error", g.Error.Error())
 	enc.AddString("error_body", g.Body)

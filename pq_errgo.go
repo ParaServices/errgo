@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// PQError ...
+// PQError represents the error from the pq package
 type PQError struct {
 	*pq.Error
 }

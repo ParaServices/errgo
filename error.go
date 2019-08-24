@@ -13,13 +13,14 @@ type Error struct {
 	ID             string          `json:"error_id"`
 	Code           string          `json:"code"`
 	Message        string          `json:"message"`
-	Details        Details         `json:"details"`
+	Details        *Details        `json:"details,omitempty"`
 	PQError        *PQError        `json:"pq_error,omitempty"`
 	GoogleAPIError *GoogleAPIError `json:"google_api_error,omitempty"`
 	AMQPError      *AMQPError      `json:"amqp_error,omitempty"`
 }
 
-// MarshalLogObject ...
+// MarshalLogObject allows the Error to be passed as an object to the
+// paralog.Logger interface.
 func (e Error) MarshalLogObject(kv zapcore.ObjectEncoder) error {
 	kv.AddString("error_id", e.ID)
 	if len(e.Code) != 0 {
@@ -53,7 +54,7 @@ func New(err error) *Error {
 	e := &Error{}
 	e.ID = nuid.Next()
 	e.Errorx = errorx.New(err)
-	e.Details = Details{Details: make(map[string]string)}
+	e.Details = &Details{Details: make(map[string]string)}
 	e.PQError = (*PQError)(nil)
 	e.GoogleAPIError = (*GoogleAPIError)(nil)
 	e.AMQPError = (*AMQPError)(nil)
