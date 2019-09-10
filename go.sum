@@ -22,8 +22,6 @@ github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/lib/pq v1.2.0 h1:LXpIM/LZ5xGFhOpXAQUIMM1HdyqzVYM13zNdjCEEcA0=
 github.com/lib/pq v1.2.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
-github.com/magicalbanana/errorx v0.0.0-20180126155306-1b41c6533dc4 h1:qaUnArBL7/VLEux/rlmv+dAIJtyVdrC4z0Z7gXCL2qA=
-github.com/magicalbanana/errorx v0.0.0-20180126155306-1b41c6533dc4/go.mod h1:3P4VyOailR4YtNNghDFiqhR3ltL2KljVICpfJCj6v6U=
 github.com/magicalbanana/errorx v0.1.0 h1:hkhpouxn6Y/UTtO9Lg0lUVpDnQeUTe3udSwYvgxJxX0=
 github.com/magicalbanana/errorx v0.1.0/go.mod h1:5/pPJEOuiX2siK5Xp0BUVJyTjtJo608WWkhFON+mjxQ=
 github.com/nats-io/nuid v1.0.1 h1:5iA8DT8V7q8WK2EScv2padNa/rTESc1KdnPw4TC2paw=
