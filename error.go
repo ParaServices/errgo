@@ -9,10 +9,10 @@ import (
 
 // Error ...
 type Error struct {
-	Errorx         *errorx.Error   `json:"errorx"`
-	ID             string          `json:"error_id"`
-	Code           string          `json:"code"`
-	Message        string          `json:"message"`
+	Errorx         *errorx.Error   `json:"errorx,omitempty"`
+	ID             string          `json:"error_id,omitempty"`
+	Code           string          `json:"code,omitempty"`
+	Message        string          `json:"message,omitempty"`
 	Details        *Details        `json:"details,omitempty"`
 	PQError        *PQError        `json:"pq_error,omitempty"`
 	GoogleAPIError *GoogleAPIError `json:"google_api_error,omitempty"`
