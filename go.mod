@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/lib/pq v1.2.0
-	github.com/magicalbanana/errorx v0.1.0
+	github.com/magicalbanana/errorx v0.2.0
 	github.com/nats-io/nuid v1.0.1
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/streadway/amqp v0.0.0-20190815230801-eade30b20f1d
