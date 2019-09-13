@@ -1,7 +1,10 @@
 package errgo
 
 import (
+	"github.com/lib/pq"
 	"github.com/magicalbanana/errorx"
+	"github.com/streadway/amqp"
+	"google.golang.org/api/googleapi"
 
 	"github.com/nats-io/nuid"
 	"go.uber.org/zap/zapcore"
@@ -51,13 +54,26 @@ func New(err error) *Error {
 	if err == nil {
 		return nil
 	}
-	e := &Error{}
-	e.ID = nuid.Next()
-	e.Errorx = errorx.New(err)
-	e.Details = &Details{Details: make(map[string]string)}
-	e.PQError = (*PQError)(nil)
-	e.GoogleAPIError = (*GoogleAPIError)(nil)
-	e.AMQPError = (*AMQPError)(nil)
+	e := &Error{
+		ID:     nuid.Next(),
+		Errorx: errorx.New(err),
+		Details: &Details{
+			Details: make(map[string]string),
+		},
+	}
+
+	pqErr, ok := err.(*pq.Error)
+	if ok {
+		e.AddPQError(pqErr)
+	}
+	googleAPIErr, ok := err.(*googleapi.Error)
+	if ok {
+		e.AddGoogleAPIError(googleAPIErr)
+	}
+	amqpErr, ok := err.(*amqp.Error)
+	if ok {
+		e.AddAMQError(amqpErr)
+	}
 	return e
 }
 
