@@ -3,17 +3,17 @@ package errgo
 import (
 	"github.com/lib/pq"
 	"github.com/magicalbanana/errorx"
+	"github.com/rs/xid"
 	"github.com/streadway/amqp"
 	"google.golang.org/api/googleapi"
 
-	"github.com/nats-io/nuid"
 	"go.uber.org/zap/zapcore"
 )
 
 // Error ...
 type Error struct {
 	Errorx         *errorx.Error   `json:"errorx,omitempty"`
-	ID             string          `json:"error_id,omitempty"`
+	ErrorID        string          `json:"error_id,omitempty"`
 	Code           string          `json:"code,omitempty"`
 	Message        string          `json:"message,omitempty"`
 	Details        *Details        `json:"details,omitempty"`
@@ -22,30 +22,99 @@ type Error struct {
 	AMQPError      *AMQPError      `json:"amqp_error,omitempty"`
 }
 
+func (e *Error) GetErrorx() *errorx.Error {
+	return e.Errorx
+}
+
+func (e *Error) GetErrorID() string {
+	if e.ErrorID == "" {
+		e.SetErrorID(xid.New().String())
+	}
+	return e.ErrorID
+}
+
+func (e *Error) GetCode() string {
+	return e.Code
+}
+
+func (e *Error) GetMessage() string {
+	return e.Message
+}
+
+func (e *Error) GetDetails() *Details {
+	return e.Details
+}
+
+func (e *Error) HasDetails() bool {
+	return (e.Details != nil && len(e.Details.Details) > 0)
+}
+
+func (e *Error) GetPQError() *PQError {
+	return e.PQError
+}
+
+func (e *Error) GetGoogleAPIError() *GoogleAPIError {
+	return e.GoogleAPIError
+}
+
+func (e *Error) GetAMQPError() *AMQPError {
+	return e.AMQPError
+}
+
+func (e *Error) SetErrorID(id string) {
+	e.ErrorID = id
+}
+
+func (e *Error) SetCode(code string) {
+	e.Code = code
+}
+
+func (e *Error) SetMessage(message string) {
+	e.Message = message
+}
+
+func (e *Error) SetDetails(details *Details) {
+	if details == nil || len(details.Details) < 1 {
+		return
+	}
+	e.Details = details
+}
+
+func (e *Error) AddDetail(key string, value interface{}) {
+	if e.Details == nil {
+		e.Details = &Details{}
+	}
+	e.Details.Add(key, value)
+}
+
 // MarshalLogObject allows the Error to be passed as an object to the
 // paralog.Logger interface.
 func (e Error) MarshalLogObject(kv zapcore.ObjectEncoder) error {
-	kv.AddString("error_id", e.ID)
-	if len(e.Code) != 0 {
-		kv.AddString("code", e.Code)
+	kv.AddString("error_id", e.GetErrorID())
+	if v := e.GetCode(); v != "" {
+		kv.AddString("code", v)
 	}
-	if len(e.Message) != 0 {
-		kv.AddString("message", e.Message)
+	if v := e.GetMessage(); v != "" {
+		kv.AddString("message", v)
 	}
-	kv.AddString("error", e.Error())
-	if len(e.Details.Details) > 0 {
+	if v := e.Error(); v != "" {
+		kv.AddString("error", v)
+	}
+	if e.HasDetails() {
 		kv.AddObject("details", e.Details)
 	}
-	if e.PQError != nil {
-		kv.AddObject("pq_error", e.PQError)
+	if pqErr := e.GetPQError(); pqErr != nil {
+		kv.AddObject("pq", e.PQError)
 	}
-	if e.GoogleAPIError != nil {
-		kv.AddObject("google_api_error", e.GoogleAPIError)
+	if apiErr := e.GetGoogleAPIError(); apiErr != nil {
+		kv.AddObject("google_api", apiErr)
 	}
-	if e.AMQPError != nil {
-		kv.AddObject("amqp_error", e.AMQPError)
+	if amqpErr := e.GetAMQPError(); amqpErr != nil {
+		kv.AddObject("amqp", amqpErr)
 	}
-	kv.AddByteString("error_stack", e.Errorx.Stack())
+	if stack := e.Stack(); stack != nil && len(stack) > 0 {
+		kv.AddByteString("stack", stack)
+	}
 	return nil
 }
 
@@ -55,34 +124,76 @@ func New(err error) *Error {
 		return nil
 	}
 	e := &Error{
-		ID:     nuid.Next(),
-		Errorx: errorx.New(err),
-		Details: &Details{
-			Details: make(map[string]string),
-		},
+		ErrorID: xid.New().String(),
+		Errorx:  errorx.New(err),
 	}
 
-	pqErr, ok := err.(*pq.Error)
-	if ok {
-		e.AddPQError(pqErr)
+	switch v := err.(type) {
+	case *pq.Error:
+		e.SetPQError(v)
+	case *googleapi.Error:
+		e.SetGoogleAPIError(v)
+	case *amqp.Error:
+		e.SetAMQPError(v)
 	}
-	googleAPIErr, ok := err.(*googleapi.Error)
-	if ok {
-		e.AddGoogleAPIError(googleAPIErr)
-	}
-	amqpErr, ok := err.(*amqp.Error)
-	if ok {
-		e.AddAMQError(amqpErr)
-	}
+
 	return e
 }
 
 // Error ...
 func (e *Error) Error() string {
-	return e.Errorx.Error()
+	if e.Errorx != nil {
+		return e.Errorx.Error()
+	}
+	return ""
 }
 
 // Cause ...
 func (e *Error) Cause() error {
-	return e.Errorx.Cause
+	if e.Errorx != nil {
+		return e.Errorx.Cause
+	}
+	return nil
+}
+
+func (e *Error) Stack() []byte {
+	if e.Errorx != nil {
+		return e.Errorx.Stack()
+	}
+	return nil
+}
+
+var _ error = (*Error)(nil)
+var _ ErrorGetter = (*Error)(nil)
+var _ ErrorSetter = (*Error)(nil)
+var _ ErrorAccessor = (*Error)(nil)
+
+type ErrorGetter interface {
+	GetErrorx() *errorx.Error
+	GetErrorID() string
+	GetCode() string
+	GetMessage() string
+	GetDetails() *Details
+	GetPQError() *PQError
+	GetGoogleAPIError() *GoogleAPIError
+	GetAMQPError() *AMQPError
+	Error() string
+	Cause() error
+	Stack() []byte
+}
+
+type ErrorSetter interface {
+	SetErrorID(id string)
+	SetCode(code string)
+	SetMessage(message string)
+	SetDetails(details *Details)
+	AddDetail(key string, value interface{})
+	SetPQError(pqErr *pq.Error)
+	SetGoogleAPIError(apiErr *googleapi.Error)
+	SetAMQPError(amqpErr *amqp.Error)
+}
+
+type ErrorAccessor interface {
+	ErrorGetter
+	ErrorSetter
 }

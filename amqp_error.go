@@ -12,8 +12,12 @@ type AMQPError struct {
 
 // MarshalLogObject ...
 func (a AMQPError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
-	enc.AddInt("code", a.Code)
-	enc.AddString("reason", a.Reason)
+	if code := a.Code; code != 0 {
+		enc.AddInt("code", a.Code)
+	}
+	if reason := a.Reason; reason != "" {
+		enc.AddString("reason", reason)
+	}
 	enc.AddBool("server", a.Server)
 	enc.AddBool("recover", a.Recover)
 	return nil
@@ -21,5 +25,16 @@ func (a AMQPError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 
 // AddAMQError ...
 func (e *Error) AddAMQError(err *amqp.Error) {
+	if err == nil {
+		return
+	}
 	e.AMQPError = &AMQPError{err}
+}
+
+// SetAMQPError ...
+func (e *Error) SetAMQPError(amqpErr *amqp.Error) {
+	if amqpErr == nil {
+		return
+	}
+	e.AMQPError = &AMQPError{amqpErr}
 }
