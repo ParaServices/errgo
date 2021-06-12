@@ -80,11 +80,11 @@ func (p PQError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 }
 
 // AddPQError ...
-func (e *Error) AddPQError(pqError *pq.Error) {
-	if pqError == nil {
+func (e *Error) AddPQError(pqErr *pq.Error) {
+	if pqErr == nil {
 		return
 	}
-	e.PQError = &PQError{pqError}
+	e.AddDetail("pq_error", &PQError{pqErr})
 }
 
 // SetPQError ...
@@ -92,5 +92,19 @@ func (e *Error) SetPQError(pqErr *pq.Error) {
 	if pqErr == nil {
 		return
 	}
-	e.PQError = &PQError{pqErr}
+	e.AddDetail("pq_error", &PQError{pqErr})
+}
+
+type PQErrors []PQError
+
+func (p PQErrors) MarshalLogArray(enc zapcore.ArrayEncoder) error {
+	if len(p) < 1 {
+		return nil
+	}
+
+	for i := range p {
+		enc.AppendObject(&p[i])
+	}
+
+	return nil
 }

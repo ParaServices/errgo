@@ -1,9 +1,26 @@
 package errgo
 
 import (
+	"net/http"
+
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/api/googleapi"
 )
+
+type HTTPHeader http.Header
+
+func (h HTTPHeader) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	if len(h) < 1 {
+		return nil
+	}
+	for k, v := range h {
+		zap.Strings(k, v)
+	}
+
+	return nil
+
+}
 
 // GoogleAPIError represents the error that is returned from the googleapi
 // package
@@ -21,6 +38,9 @@ func (g GoogleAPIError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	}
 	if body := g.Body; body != "" {
 		enc.AddString("body", body)
+	}
+	if header := g.Header; header != nil && len(header) > 0 {
+		enc.AddObject("header", HTTPHeader(header))
 	}
 	if code := g.Code; code != 0 {
 		enc.AddInt("code", code)
@@ -48,11 +68,11 @@ func (g GoogleAPIError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 }
 
 // AddGoogleAPIError ...
-func (e *Error) AddGoogleAPIError(err *googleapi.Error) {
-	if err == nil {
+func (e *Error) AddGoogleAPIError(apiErr *googleapi.Error) {
+	if apiErr == nil {
 		return
 	}
-	e.GoogleAPIError = &GoogleAPIError{err}
+	e.AddDetail("google_api_error", &GoogleAPIError{apiErr})
 }
 
 // SetGoogleAPIError ...
@@ -60,5 +80,5 @@ func (e *Error) SetGoogleAPIError(apiErr *googleapi.Error) {
 	if apiErr == nil {
 		return
 	}
-	e.GoogleAPIError = &GoogleAPIError{apiErr}
+	e.AddDetail("google_api_error", &GoogleAPIError{apiErr})
 }
