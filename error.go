@@ -116,7 +116,7 @@ func (e Error) MarshalLogObject(kv zapcore.ObjectEncoder) error {
 		kv.AddObject("amqp", amqpErr)
 	}
 	if stack := e.Stack(); stack != nil && len(stack) > 0 {
-		kv.AddByteString("stack", stack)
+		kv.AddByteString("stack_trace", stack)
 	}
 	return nil
 }

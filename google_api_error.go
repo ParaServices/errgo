@@ -19,7 +19,6 @@ func (h HTTPHeader) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	}
 
 	return nil
-
 }
 
 // GoogleAPIError represents the error that is returned from the googleapi
