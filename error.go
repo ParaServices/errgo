@@ -1,6 +1,9 @@
 package errgo
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/lib/pq"
 	"github.com/magicalbanana/errorx"
 	"github.com/rs/xid"
@@ -144,6 +147,18 @@ func New(err error) *Error {
 	}
 
 	return e
+}
+
+func NewF(s string, args ...interface{}) *Error {
+	if s == "" {
+		return nil
+	}
+
+	if len(args) < 1 {
+		return New(errors.New(s))
+	}
+
+	return New(fmt.Errorf(s, args...))
 }
 
 // Error ...
