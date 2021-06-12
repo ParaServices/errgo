@@ -123,6 +123,12 @@ func New(err error) *Error {
 	if err == nil {
 		return nil
 	}
+
+	errx, ok := err.(*Error)
+	if ok {
+		return errx
+	}
+
 	e := &Error{
 		ErrorID: xid.New().String(),
 		Errorx:  errorx.New(err),
