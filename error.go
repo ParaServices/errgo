@@ -184,6 +184,12 @@ func (e *Error) Stack() []byte {
 	return nil
 }
 
+// StackFrames for :
+// https://github.com/getsentry/sentry-go/blob/master/stacktrace.go#L81
+func (e *Error) StackFrames() []byte {
+	return e.Stack()
+}
+
 var _ error = (*Error)(nil)
 var _ ErrorGetter = (*Error)(nil)
 var _ ErrorSetter = (*Error)(nil)
@@ -201,6 +207,7 @@ type ErrorGetter interface {
 	Error() string
 	Cause() error
 	Stack() []byte
+	StackFrames() []byte
 }
 
 type ErrorSetter interface {
