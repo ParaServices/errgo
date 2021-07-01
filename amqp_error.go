@@ -5,6 +5,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+const AMQPErrorKey = "amqp_error"
+
 // AMQPError represents the error from the amqp package
 type AMQPError struct {
 	*amqp.Error
@@ -23,18 +25,10 @@ func (a AMQPError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	return nil
 }
 
-// AddAMQError ...
-func (e *Error) AddAMQError(err *amqp.Error) {
-	if err == nil {
-		return
-	}
-	e.AMQPError = &AMQPError{err}
-}
-
 // SetAMQPError ...
 func (e *Error) SetAMQPError(amqpErr *amqp.Error) {
 	if amqpErr == nil {
 		return
 	}
-	e.AMQPError = &AMQPError{amqpErr}
+	e.AddDetail(AMQPErrorKey, &AMQPError{amqpErr})
 }

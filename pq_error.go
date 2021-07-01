@@ -5,6 +5,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+const PQErrorKey = "pq_error"
+
 // PQError represents the error from the pq package
 type PQError struct {
 	*pq.Error
@@ -79,20 +81,12 @@ func (p PQError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	return nil
 }
 
-// AddPQError ...
-func (e *Error) AddPQError(pqErr *pq.Error) {
-	if pqErr == nil {
-		return
-	}
-	e.AddDetail("pq_error", &PQError{pqErr})
-}
-
 // SetPQError ...
 func (e *Error) SetPQError(pqErr *pq.Error) {
 	if pqErr == nil {
 		return
 	}
-	e.AddDetail("pq_error", &PQError{pqErr})
+	e.AddDetail(PQErrorKey, &PQError{pqErr})
 }
 
 type PQErrors []PQError

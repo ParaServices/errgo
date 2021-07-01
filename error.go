@@ -15,14 +15,11 @@ import (
 
 // Error ...
 type Error struct {
-	Errorx         *errorx.Error   `json:"errorx,omitempty"`
-	ErrorID        string          `json:"error_id,omitempty"`
-	Code           string          `json:"code,omitempty"`
-	Message        string          `json:"message,omitempty"`
-	Details        *Details        `json:"details,omitempty"`
-	PQError        *PQError        `json:"pq_error,omitempty"`
-	GoogleAPIError *GoogleAPIError `json:"google_api_error,omitempty"`
-	AMQPError      *AMQPError      `json:"amqp_error,omitempty"`
+	Errorx  *errorx.Error `json:"errorx,omitempty"`
+	ErrorID string        `json:"error_id,omitempty"`
+	Code    string        `json:"code,omitempty"`
+	Message string        `json:"message,omitempty"`
+	Details Details       `json:"details,omitempty"`
 }
 
 func (e *Error) GetErrorx() *errorx.Error {
@@ -44,24 +41,48 @@ func (e *Error) GetMessage() string {
 	return e.Message
 }
 
-func (e *Error) GetDetails() *Details {
+func (e *Error) GetDetails() Details {
 	return e.Details
 }
 
 func (e *Error) HasDetails() bool {
-	return (e.Details != nil && len(e.Details.Details) > 0)
+	return (e.Details != nil && len(e.Details) > 0)
 }
 
 func (e *Error) GetPQError() *PQError {
-	return e.PQError
+	v, ok := e.Details[PQErrorKey]
+	if !ok {
+		return nil
+	}
+	pqErr, ok := v.(*PQError)
+	if !ok {
+		return nil
+	}
+	return pqErr
 }
 
 func (e *Error) GetGoogleAPIError() *GoogleAPIError {
-	return e.GoogleAPIError
+	v, ok := e.Details[GoogleAPIErrorKey]
+	if !ok {
+		return nil
+	}
+	googleAPIError, ok := v.(*GoogleAPIError)
+	if !ok {
+		return nil
+	}
+	return googleAPIError
 }
 
 func (e *Error) GetAMQPError() *AMQPError {
-	return e.AMQPError
+	v, ok := e.Details[AMQPErrorKey]
+	if !ok {
+		return nil
+	}
+	amqpError, ok := v.(*AMQPError)
+	if !ok {
+		return nil
+	}
+	return amqpError
 }
 
 func (e *Error) SetErrorID(id string) {
@@ -76,16 +97,19 @@ func (e *Error) SetMessage(message string) {
 	e.Message = message
 }
 
-func (e *Error) SetDetails(details *Details) {
-	if details == nil || len(details.Details) < 1 {
+func (e *Error) SetDetails(details Details) {
+	if details == nil || len(details) < 1 {
 		return
 	}
-	e.Details = details
+
+	for k, v := range details {
+		e.AddDetail(k, v)
+	}
 }
 
 func (e *Error) AddDetail(key string, value interface{}) {
 	if e.Details == nil {
-		e.Details = &Details{}
+		e.Details = make(Details)
 	}
 	e.Details.Add(key, value)
 }
@@ -105,15 +129,6 @@ func (e Error) MarshalLogObject(kv zapcore.ObjectEncoder) error {
 	}
 	if e.HasDetails() {
 		kv.AddObject("details", e.Details)
-	}
-	if pqErr := e.GetPQError(); pqErr != nil {
-		kv.AddObject("pq", e.PQError)
-	}
-	if apiErr := e.GetGoogleAPIError(); apiErr != nil {
-		kv.AddObject("google_api", apiErr)
-	}
-	if amqpErr := e.GetAMQPError(); amqpErr != nil {
-		kv.AddObject("amqp", amqpErr)
 	}
 	if stack := e.Stack(); stack != nil && len(stack) > 0 {
 		kv.AddByteString("stack_trace", stack)
@@ -184,12 +199,6 @@ func (e *Error) Stack() []byte {
 	return nil
 }
 
-// StackFrames for :
-// https://github.com/getsentry/sentry-go/blob/master/stacktrace.go#L81
-func (e *Error) StackFrames() []byte {
-	return e.Stack()
-}
-
 var _ error = (*Error)(nil)
 var _ ErrorGetter = (*Error)(nil)
 var _ ErrorSetter = (*Error)(nil)
@@ -200,21 +209,20 @@ type ErrorGetter interface {
 	GetErrorID() string
 	GetCode() string
 	GetMessage() string
-	GetDetails() *Details
+	GetDetails() Details
 	GetPQError() *PQError
 	GetGoogleAPIError() *GoogleAPIError
 	GetAMQPError() *AMQPError
 	Error() string
 	Cause() error
 	Stack() []byte
-	StackFrames() []byte
 }
 
 type ErrorSetter interface {
 	SetErrorID(id string)
 	SetCode(code string)
 	SetMessage(message string)
-	SetDetails(details *Details)
+	SetDetails(details Details)
 	AddDetail(key string, value interface{})
 	SetPQError(pqErr *pq.Error)
 	SetGoogleAPIError(apiErr *googleapi.Error)

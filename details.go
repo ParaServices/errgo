@@ -3,16 +3,22 @@ package errgo
 import "go.uber.org/zap/zapcore"
 
 // Details represents the additional details for a given error (metadata)
-type Details struct {
-	Details map[string]interface{} `json:"details,omitempty"`
-}
+type Details map[string]interface{}
 
 // Add adds a detail to the details
 func (d Details) Add(key string, value interface{}) {
-	if d.Details == nil {
-		d.Details = make(map[string]interface{})
+	if d == nil {
+		d = make(map[string]interface{})
 	}
-	d.Details[key] = value
+	d[key] = value
+}
+
+func (d Details) Get(key string) interface{} {
+	v, ok := d[key]
+	if ok {
+		return v
+	}
+	return nil
 }
 
 // MarshalLogObject ...
@@ -20,32 +26,32 @@ func (d Details) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	defaultFn := func(key string, value interface{}) {
 		enc.AddReflected(key, value)
 	}
-	for k, v := range d.Details {
+	for k, v := range d {
 		switch k {
-		case "pq_error":
+		case PQErrorKey:
 			switch pqErr := v.(type) {
 			case *PQError:
-				enc.AddObject("pq_error", pqErr)
+				enc.AddObject(PQErrorKey, pqErr)
 			case PQError:
-				enc.AddObject("pq_error", &pqErr)
+				enc.AddObject(PQErrorKey, &pqErr)
 			default:
 				defaultFn(k, v)
 			}
-		case "amqp_error":
+		case AMQPErrorKey:
 			switch amqpErr := v.(type) {
 			case *AMQPError:
-				enc.AddObject("amqp_error", amqpErr)
+				enc.AddObject(AMQPErrorKey, amqpErr)
 			case AMQPError:
-				enc.AddObject("amqp_error", &amqpErr)
+				enc.AddObject(AMQPErrorKey, &amqpErr)
 			default:
 				defaultFn(k, v)
 			}
-		case "google_api_error":
+		case GoogleAPIErrorKey:
 			switch apiErr := v.(type) {
 			case *GoogleAPIError:
-				enc.AddObject("google_api_error", apiErr)
+				enc.AddObject(GoogleAPIErrorKey, apiErr)
 			case GoogleAPIError:
-				enc.AddObject("google_api_error", &apiErr)
+				enc.AddObject(GoogleAPIErrorKey, &apiErr)
 			default:
 				defaultFn(k, v)
 			}

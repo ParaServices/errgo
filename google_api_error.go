@@ -21,6 +21,8 @@ func (h HTTPHeader) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	return nil
 }
 
+const GoogleAPIErrorKey = "google_api_error"
+
 // GoogleAPIError represents the error that is returned from the googleapi
 // package
 type GoogleAPIError struct {
@@ -66,18 +68,10 @@ func (g GoogleAPIError) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	return nil
 }
 
-// AddGoogleAPIError ...
-func (e *Error) AddGoogleAPIError(apiErr *googleapi.Error) {
-	if apiErr == nil {
-		return
-	}
-	e.AddDetail("google_api_error", &GoogleAPIError{apiErr})
-}
-
 // SetGoogleAPIError ...
 func (e *Error) SetGoogleAPIError(apiErr *googleapi.Error) {
 	if apiErr == nil {
 		return
 	}
-	e.AddDetail("google_api_error", &GoogleAPIError{apiErr})
+	e.AddDetail(GoogleAPIErrorKey, &GoogleAPIError{apiErr})
 }
