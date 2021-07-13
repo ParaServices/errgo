@@ -49,42 +49,6 @@ func (e *Error) HasDetails() bool {
 	return (e.Details != nil && len(e.Details) > 0)
 }
 
-func (e *Error) GetPQError() *PQError {
-	v, ok := e.Details[PQErrorKey]
-	if !ok {
-		return nil
-	}
-	pqErr, ok := v.(*PQError)
-	if !ok {
-		return nil
-	}
-	return pqErr
-}
-
-func (e *Error) GetGoogleAPIError() *GoogleAPIError {
-	v, ok := e.Details[GoogleAPIErrorKey]
-	if !ok {
-		return nil
-	}
-	googleAPIError, ok := v.(*GoogleAPIError)
-	if !ok {
-		return nil
-	}
-	return googleAPIError
-}
-
-func (e *Error) GetAMQPError() *AMQPError {
-	v, ok := e.Details[AMQPErrorKey]
-	if !ok {
-		return nil
-	}
-	amqpError, ok := v.(*AMQPError)
-	if !ok {
-		return nil
-	}
-	return amqpError
-}
-
 func (e *Error) SetErrorID(id string) {
 	e.ErrorID = id
 }
@@ -200,8 +164,6 @@ func (e *Error) Stack() []byte {
 }
 
 var _ error = (*Error)(nil)
-var _ ErrorGetter = (*Error)(nil)
-var _ ErrorSetter = (*Error)(nil)
 var _ ErrorAccessor = (*Error)(nil)
 
 type ErrorGetter interface {

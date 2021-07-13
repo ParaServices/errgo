@@ -8,6 +8,20 @@ import (
 	"google.golang.org/api/googleapi"
 )
 
+const GoogleAPIErrorKey = "google_api_error"
+
+func (e *Error) GetGoogleAPIError() *GoogleAPIError {
+	v, ok := e.Details[GoogleAPIErrorKey]
+	if !ok {
+		return nil
+	}
+	googleAPIError, ok := v.(*GoogleAPIError)
+	if !ok {
+		return nil
+	}
+	return googleAPIError
+}
+
 type HTTPHeader http.Header
 
 func (h HTTPHeader) MarshalLogObject(enc zapcore.ObjectEncoder) error {
@@ -20,8 +34,6 @@ func (h HTTPHeader) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 
 	return nil
 }
-
-const GoogleAPIErrorKey = "google_api_error"
 
 // GoogleAPIError represents the error that is returned from the googleapi
 // package

@@ -7,6 +7,18 @@ import (
 
 const PQErrorKey = "pq_error"
 
+func (e *Error) GetPQError() *PQError {
+	v, ok := e.Details[PQErrorKey]
+	if !ok {
+		return nil
+	}
+	pqErr, ok := v.(*PQError)
+	if !ok {
+		return nil
+	}
+	return pqErr
+}
+
 // PQError represents the error from the pq package
 type PQError struct {
 	*pq.Error
